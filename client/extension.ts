@@ -13,18 +13,18 @@ export function activate(context: ExtensionContext) {
 
 	// The server is packaged as a standalone command
 	let serverMain = context.asAbsolutePath(binName());
-	
+
 	// If the extension is launched in debug mode then the debug server options are used
 	// Otherwise the run options are used
 	let serverOptions: ServerOptions = {
-		run : { command: serverMain, args: [], transport: TransportKind.stdio },
-		debug : { command: serverMain, args: [], transport: TransportKind.stdio }
+		run: { command: serverMain, args: [], transport: TransportKind.stdio },
+		debug: { command: serverMain, args: [], transport: TransportKind.stdio }
 	}
-	
+
 	// Options to control the language client
 	let clientOptions: LanguageClientOptions = {
 		// Register the server for F# documents
-		documentSelector: [{scheme: 'file', language: 'fsharp'}],
+		documentSelector: [{ scheme: 'file', language: 'fsharp' }],
 		synchronize: {
 			// Synchronize the setting section 'languageServerExample' to the server
 			configurationSection: 'fsharp',
@@ -37,11 +37,11 @@ export function activate(context: ExtensionContext) {
 			]
 		}
 	}
-	
+
 	// Create the language client and start the client.
 	let client = new LanguageClient('fsharp', 'F# Language Server', serverOptions, clientOptions);
 	let disposable = client.start();
-	
+
 	// Push the disposable to the context's subscriptions so that the 
 	// client can be deactivated on extension deactivation
 	context.subscriptions.push(disposable);
@@ -93,7 +93,7 @@ function debugTest(projectPath: string, fullyQualifiedName: string): Promise<num
 				'VSTEST_HOST_DEBUG': '1'
 			}
 		})
-		
+
 		outputChannel.clear()
 		outputChannel.show()
 		outputChannel.appendLine(`${cmd} ${args.join(' ')}...`)
@@ -117,19 +117,19 @@ function debugTest(projectPath: string, fullyQualifiedName: string): Promise<num
 					}
 					outputChannel.appendLine(`Attaching debugger to process ${pid}...`)
 					debug.startDebugging(workspaceFolder, config)
-					
+
 					isWaitingForDebugger = false
 				}
 			}
 		}
 
 		var stdoutBuffer = ''
-		function onStdoutChunk(chunk: string|Buffer) {
+		function onStdoutChunk(chunk: string | Buffer) {
 			// Append to output channel
 			let string = chunk.toString()
 			outputChannel.append(string)
 			// Send each line to onStdoutLine
-			stdoutBuffer += string 
+			stdoutBuffer += string
 			var newline = stdoutBuffer.indexOf('\n')
 			while (newline != -1) {
 				let line = stdoutBuffer.substring(0, newline)
@@ -146,7 +146,7 @@ function debugTest(projectPath: string, fullyQualifiedName: string): Promise<num
 }
 
 interface StartProgress {
-	title: string 
+	title: string
 	nFiles: number
 }
 
@@ -155,13 +155,13 @@ function createProgressListeners(client: LanguageClient) {
 	let progressListener = new class {
 		countChecked = 0
 		nFiles = 0
-		progress: Progress<{message?: string}>
+		progress: Progress<{ message?: string }>
 		resolve: (nothing: {}) => void
-		
+
 		startProgress(start: StartProgress) {
 			// TODO implement user cancellation
 			// TODO Change 15 to ProgressLocation.Notification
-			window.withProgress({title: start.title, location: 15}, progress => new Promise((resolve, _reject) => {
+			window.withProgress({ title: start.title, location: 15 }, progress => new Promise((resolve, _reject) => {
 				this.countChecked = 0;
 				this.nFiles = start.nFiles;
 				this.progress = progress;
@@ -178,7 +178,7 @@ function createProgressListeners(client: LanguageClient) {
 				let oldPercent = this.percentComplete();
 				this.countChecked++;
 				let newPercent = this.percentComplete();
-				let report = {message: fileName, increment: newPercent - oldPercent};
+				let report = { message: fileName, increment: newPercent - oldPercent };
 				this.progress.report(report);
 			}
 		}
@@ -205,6 +205,8 @@ function createProgressListeners(client: LanguageClient) {
 function binName() {
 	if (process.platform === 'win32')
 		return path.join('src', 'FSharpLanguageServer', 'bin', 'Release', 'netcoreapp2.0', 'win10-x64', 'publish', 'FSharpLanguageServer.exe')
+	else if (process.platform === 'linux')
+		return path.join('src', 'FSharpLanguageServer', 'bin', 'Release', 'netcoreapp2.0', 'linux-x64', 'publish', 'FSharpLanguageServer')
 	else
 		return path.join('src', 'FSharpLanguageServer', 'bin', 'Release', 'netcoreapp2.0', 'osx.10.11-x64', 'publish', 'FSharpLanguageServer')
 }
